@@ -29,18 +29,12 @@ namespace ExpenseTrackerAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
-            if (string.IsNullOrWhiteSpace(registerDto.UserName))
-                return BadRequest("Username is required");
-
-            if (string.IsNullOrWhiteSpace(registerDto.Password))
-                return BadRequest("Password is required");
-
             if (await _db.Users.AnyAsync(u => u.UserName == registerDto.UserName))
                 return BadRequest("Username already exists");
 
-            User newUser = new() 
-            { 
-                UserName = registerDto.UserName, 
+            User newUser = new()
+            {
+                UserName = registerDto.UserName,
                 Password = _passwordService.HashPassword(registerDto.Password)
             };
 
@@ -53,18 +47,9 @@ namespace ExpenseTrackerAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            if (string.IsNullOrWhiteSpace(loginDto.UserName))
-                return BadRequest("Username is required");
-
-            if (string.IsNullOrWhiteSpace(loginDto.Password))
-                return BadRequest("Password is required");
-
             var user = await _db.Users.Where(u => u.UserName == loginDto.UserName).FirstOrDefaultAsync();
 
-            if (user == null)
-                return NotFound();
-
-            if (!_passwordService.VerifyPassword(loginDto.Password, user.Password))
+            if (user == null || (!_passwordService.VerifyPassword(loginDto.Password, user.Password)))
                 return Unauthorized();
 
             var tokenHandler = new JwtSecurityTokenHandler();

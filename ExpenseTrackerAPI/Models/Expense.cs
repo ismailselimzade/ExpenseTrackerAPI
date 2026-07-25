@@ -1,4 +1,6 @@
-﻿namespace ExpenseTrackerAPI.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ExpenseTrackerAPI.Models
 {
     public enum Category { Groceries, Leisure, Electronics, Utilities, Clothing, Health, Others }
     public class Expense

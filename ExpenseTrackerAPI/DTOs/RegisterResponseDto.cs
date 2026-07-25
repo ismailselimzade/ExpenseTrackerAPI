@@ -1,7 +1,9 @@
-﻿namespace ExpenseTrackerAPI.DTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ExpenseTrackerAPI.DTOs
 {
     public class RegisterResponseDto
     {
-        public string UserName {  get; set; }
+        public string UserName { get; set; }
     }
 }

@@ -1,19 +1,65 @@
-@ExpenseTrackerAPI_HostAddress = http://localhost:5215
+@baseUrl = https://localhost:7034
+@token = ?
+
+
 
 ### Register
-POST {{ExpenseTrackerAPI_HostAddress}}/api/auth/register
+POST {{baseUrl}}/api/auth/register
 Content-Type: application/json
 
 {
-  "UserName": "",
-  "Password": ""
+  "userName": "testuser",
+  "password": "Test1234!"
 }
 
 ### Login
-POST {{ExpenseTrackerAPI_HostAddress}}/api/auth/login
+POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "UserName": "",
-  "Password": ""
+  "userName": "testuser",
+  "password": "Test1234!"
 }
+
+### Add Expense
+POST {{baseUrl}}/api/expense/expense
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "amount": 50.00,
+  "category": 0,
+  "description": "Supermarket"
+}
+
+### Get All Expenses
+GET {{baseUrl}}/api/expense
+Authorization: Bearer {{token}}
+
+### Get Last Month
+GET {{baseUrl}}/api/expense?filter=lastMonth
+Authorization: Bearer {{token}}
+
+### Get Last 3 Months
+GET {{baseUrl}}/api/expense?filter=last3Month
+Authorization: Bearer {{token}}
+
+### Get Custom Date Range
+GET {{baseUrl}}/api/expense?startDate=2026-01-01&endDate=2026-07-26
+Authorization: Bearer {{token}}
+
+### Update Expense
+PUT {{baseUrl}}/api/expense
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "id": 1,
+  "amount": 75.00,
+  "category": 1,
+  "description": "Updated expense"
+}
+
+### Delete Expense
+DELETE {{baseUrl}}/api/expense/expense/1
+Authorization: Bearer {{token}}

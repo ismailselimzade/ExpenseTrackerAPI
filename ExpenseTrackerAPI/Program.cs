@@ -15,7 +15,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
+        x => x.MigrationsHistoryTable("__EFMigrationsHistory", "expense_tracker_db"));
 });
 
 builder.Services.AddAuthentication(option =>
@@ -40,6 +41,13 @@ builder.Services.AddAuthentication(option =>
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -50,6 +58,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();

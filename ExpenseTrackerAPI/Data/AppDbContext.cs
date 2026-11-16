@@ -9,5 +9,10 @@ namespace ExpenseTrackerAPI.Data
         public DbSet<Expense> Expenses { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         { }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.HasDefaultSchema("expense_tracker_db");
+        }
     }
 }

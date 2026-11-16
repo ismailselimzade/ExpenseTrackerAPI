@@ -73,18 +73,59 @@ namespace ExpenseTrackerAPI.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetExpenses([FromQuery] string? filter = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+        public async Task<IActionResult> GetExpenses(
+            [FromQuery] string? filter = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            List<Expense> expenses = null;
-            if (string.Equals(filter, "lastMonth", StringComparison.OrdinalIgnoreCase))
-                expenses = await _db.Expenses.Where(e => e.UserId == userId && e.Date > DateTime.UtcNow.AddMonths(-1)).ToListAsync();
-            else if (string.Equals(filter, "last3Month", StringComparison.OrdinalIgnoreCase))
-                expenses = await _db.Expenses.Where(e => e.UserId == userId && e.Date > DateTime.UtcNow.AddMonths(-3)).ToListAsync();
-            else if (filter == null && startDate != null && endDate != null)
-                expenses = await _db.Expenses.Where(e => e.UserId == userId && e.Date <= endDate && e.Date >= startDate).ToListAsync();
 
-            return Ok(expenses ?? await _db.Expenses.Where(e => e.UserId == userId).ToListAsync());
+            IQueryable<Expense> query = _db.Expenses
+                .Where(e => e.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                if (string.Equals(filter, "lastMonth", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(e => e.Date >= DateTime.UtcNow.AddMonths(-1));
+                }
+                else if (string.Equals(filter, "last3Month", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(e => e.Date >= DateTime.UtcNow.AddMonths(-3));
+                }
+                else
+                {
+                    return BadRequest("Invalid filter. Allowed values: lastMonth, last3Month.");
+                }
+            }
+            else
+            {
+                if (startDate.HasValue)
+                {
+                    var utcStart = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+                    query = query.Where(e => e.Date >= utcStart);
+                }
+
+                if (endDate.HasValue)
+                {
+                    var utcEndExclusive = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1), DateTimeKind.Utc);
+                    query = query.Where(e => e.Date < utcEndExclusive);
+                }
+            }
+
+            var expenses = await query
+                .OrderByDescending(e => e.Date)
+                .Select(e => new ExpenseResponseDto
+                {
+                    Id = e.Id,
+                    Amount = e.Amount,
+                    Category = e.Category,
+                    Description = e.Description,
+                    Date = e.Date
+                })
+                .ToListAsync();
+
+            return Ok(expenses);
         }
     }
 }
